@@ -20,12 +20,14 @@ def main():
     api = AppAPI()
     
     window = webview.create_window(
-        title='예제',
+        title='치지직 도네 수집기',
         url = html_path,
         js_api = api,
         width=1000,
         height=800
     )
+    
+    api.set_window(window)
     
     webview.start(debug=True)
     
