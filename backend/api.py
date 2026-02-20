@@ -86,7 +86,8 @@ class AppAPI:
                         continue
 
                     # 3. 후원 전용 커맨드 93102 처리
-                    if cmd == 93102:
+                    #if cmd == 93102:
+                    if cmd == 93101:
                         for msg in body_list:
                             if not msg: continue
                             
@@ -98,30 +99,29 @@ class AppAPI:
                                 extras = json.loads(extras_raw) if isinstance(extras_raw, str) else extras_raw
                                 pay_amount = extras.get('payAmount')
                                 
-                                # 실제 후원 금액이 있는 경우만
-                                if pay_amount:
+                                
                                     #profile_raw = msg.get('profile', '{}')
                                     #profile = json.loads(profile_raw) if isinstance(profile_raw, str) else profile_raw
-                                    profile_raw = msg.get('profile')
-                                    nickname = '익명'
-                                    
-                                    if profile_raw:
-                                        profile = json.loads(profile_raw) if isinstance(profile_raw,str) else profile_raw
-                                        nickname = profile.get('nickname', '익명')
-                                    
-                                    donation_info = {
-                                        'nickname': nickname,
-                                        'amount': pay_amount,
-                                        'message': msg.get('msg', ''),
-                                        'time': self._format_time(msg.get('msgTime'))
-                                    }
-                                    
-                                    print(f"[💰 후원 발생] {donation_info['time']} {donation_info['nickname']}: ({donation_info['amount']}원) {donation_info['message']}" )
+                                profile_raw = msg.get('profile')
+                                nickname = '익명'
+                                
+                                if profile_raw:
+                                    profile = json.loads(profile_raw) if isinstance(profile_raw,str) else profile_raw
+                                    nickname = profile.get('nickname', '익명')
+                                
+                                donation_info = {
+                                    'nickname': nickname,
+                                    'amount': pay_amount,
+                                    'message': msg.get('msg', ''),
+                                    'time': self._format_time(msg.get('msgTime'))
+                                }
+                                
+                                print(f"[💰 후원 발생] {donation_info['time']} {donation_info['nickname']}: ({donation_info['amount']}원) {donation_info['message']}" )
 
-                                    if self._window:
-                                        js_payload = json.dumps(donation_info)
-                                        # React 호출
-                                        self._window.evaluate_js(f"if(window.addDonation) {{ window.addDonation({js_payload}); }}")
+                                if self._window:
+                                    js_payload = json.dumps(donation_info)
+                                    # React 호출
+                                    self._window.evaluate_js(f"if(window.addDonation) {{ window.addDonation({js_payload}); }}")
                             except Exception as inner_e:
                                 # 메시지 하나 파싱 실패해도 루프는 계속 돌도록 함
                                 print(f"[*] 메시지 파싱 중 스킵 : {inner_e}")
