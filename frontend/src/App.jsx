@@ -22,6 +22,7 @@ function App() {
   const [isRunning, setIsRunning] = useState(false);
   const [historyRows, setHistoryRows] = useState([]);
   const [countRows, setCountRows] = useState([]);
+  const [showAmount,setShowAmount] = useState(false);
   
   // 1. 현재 선택된 탭 상태 (기본값: 'count')
   const [activeTab, setActiveTab] = useState('count');
@@ -51,15 +52,15 @@ function App() {
   const historyColDefs = useMemo(() => [
     { field: 'time', headerName: '시간', width: 120 },
     { field: 'nickname', headerName: '닉네임', width: 120 },
-    { field: 'amount', headerName: '금액', width: 100, valueFormatter: p => p.value?.toLocaleString() + '원' },
+    { field: 'amount', headerName: '금액', width: 100,hide:!showAmount, valueFormatter: p => p.value?.toLocaleString() + '원' },
     { field: 'message', headerName: '메시지', flex: 1 }
-  ], []);
+  ], [showAmount]);
 
   const countColDefs = useMemo(() => [
     { field: 'message', headerName: '도네 내용', flex: 1 },
     { field: 'count', headerName: '횟수', width: 100 },
-    { field: 'totalAmount', headerName: '누적 금액', width: 150, valueFormatter: p => p.value?.toLocaleString() + '원' }
-  ], []);
+    { field: 'totalAmount', headerName: '누적 금액',hide:!showAmount, width: 150, valueFormatter: p => p.value?.toLocaleString() + '원' }
+  ], [showAmount]);
 
   const handleStart = async () => {
     if (!channelId) return alert('채널 ID를 입력하세요');
@@ -87,6 +88,7 @@ function App() {
           onChange={(e) => setChannelId(e.target.value)}
           style={{ padding: '10px', width: '250px', border: '1px solid #ddd', borderRadius: '4px' }}
         />
+        
         {!isRunning ? (
           <button onClick={handleStart} style={{ padding: '10px 25px', backgroundColor: '#00ffa3', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>수집 시작</button>
         ) : (
@@ -149,11 +151,42 @@ function App() {
       )}
       </div>
 
-      {/* 바닥 상태 바 (여백 확인용) */}
-      <div style={{ fontSize: '12px', color: '#888', textAlign: 'right' }}>
-        EasyWare v1.0 | Status: {isRunning ? 'Running' : 'Stopped'}
-      </div>
+      {/* 바닥 상태 바 */}
+    <div style={{ 
+      fontSize: '12px', 
+      color: '#888', 
+      display: 'flex',           // Flexbox 활성화
+      justifyContent: 'flex-end', // 전체 내용을 우측 끝으로 정렬
+      alignItems: 'center',       // 세로 중앙 정렬
+      gap: '15px',                // 체크박스와 텍스트 사이 간격
+      marginTop: '5px'            // 위 그리드와의 미세한 간격
+    }}>
+      {/* ⭐ 금액 표시 체크박스 */}
+      <label style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: '5px', 
+        cursor: 'pointer', 
+        color: '#333' // 체크박스 텍스트는 좀 더 진하게 보이게 설정
+      }}>
+        <input 
+          type="checkbox" 
+          checked={showAmount} 
+          onChange={(e) => setShowAmount(e.target.checked)}
+          style={{ width: '15px', height: '15px', cursor: 'pointer' }}
+        />
+        금액 표시
+      </label>
+    
+      {/* 버전 및 상태 정보 */}
+      <span>
+        DonateCollector v0.0.1 | Status: 
+        <span style={{ color: isRunning ? '#00ffa3' : '#ff4d4d', fontWeight: 'bold', marginLeft: '4px' }}>
+          {isRunning ? 'Running' : 'Stopped'}
+        </span>
+      </span>
     </div>
+  </div>
   );
 }
 
