@@ -103,6 +103,13 @@ function App() {
     setIsRunning(false);
   };
 
+  const handleClear =()=>{
+    if(window.confirm('집계 기록을 전부 초기화 하시겠습니까?')){
+      setHistoryRows([]);
+      setCountRows([]);
+    }
+  }
+
   return (
     // 전체 컨테이너에 하단 여백(pb: '30px') 추가
     <div style={{ padding: '20px', paddingBottom: '30px', height: '100vh', display: 'flex', flexDirection: 'column', gap: '15px', boxSizing: 'border-box' }}>
@@ -123,6 +130,18 @@ function App() {
         ) : (
           <button onClick={handleStop} style={{ padding: '10px 25px', backgroundColor: '#ff4d4d', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>수집 중지</button>
         )}
+        <button onClick={handleClear}
+        disabledd = {isRunning}
+        style ={{
+          padding: '10px 20px', 
+          backgroundColor: isRunning ? '#ccc' : '#6c757d', 
+          color: 'white', 
+          border: 'none', 
+          borderRadius: '4px', 
+          cursor: isRunning ? 'not-allowed' : 'pointer',
+          fontWeight: 'bold',
+          marginLeft: 'auto' // 버튼을 오른쪽 끝으로 밀기
+        }}>초기화</button>
       </div>
       {/* ⭐ 추가된 상세 설정 영역 (필터 및 집계 조건) */}
       <div style={{ display: 'flex', gap: '20px', alignItems: 'center', backgroundColor: '#f1f3f5', padding: '10px 15px', borderRadius: '0 0 8px 8px', fontSize: '13px', flexWrap: 'wrap' }}>
