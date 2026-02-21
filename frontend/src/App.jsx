@@ -114,6 +114,7 @@ function App() {
           placeholder="치지직 채널 ID" 
           value={channelId}
           onChange={(e) => setChannelId(e.target.value)}
+          disabled = {isRunning}
           style={{ padding: '10px', width: '250px', border: '1px solid #ddd', borderRadius: '4px' }}
         />
         
@@ -132,6 +133,7 @@ function App() {
             type="number" 
             value={targetAmount} 
             onChange={(e) => setTargetAmount(Number(e.target.value))} 
+            disabled = {isRunning}
             style={{ width: '80px', padding: '5px', border: '1px solid #ccc', borderRadius: '4px' }}
           />
         </div>
@@ -139,10 +141,10 @@ function App() {
         {/* 2. 비교 방식 (라디오) */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', borderLeft: '1px solid #ccc', paddingLeft: '15px' }}>
           <label style={{ cursor: 'pointer' }}>
-            <input type="radio" name="matchType" value="exact" checked={matchType === 'exact'} onChange={(e) => setMatchType(e.target.value)} /> 정확히
+            <input type="radio" name="matchType" value="exact" checked={matchType === 'exact'} onChange={(e) => setMatchType(e.target.value)} disabled = {isRunning} /> 정확히
           </label>
           <label style={{ cursor: 'pointer' }}>
-            <input type="radio" name="matchType" value="above" checked={matchType === 'above'} onChange={(e) => setMatchType(e.target.value)} /> 이상
+            <input type="radio" name="matchType" value="above" checked={matchType === 'above'} onChange={(e) => setMatchType(e.target.value)} disabled = {isRunning} /> 이상
           </label>
         </div>
 
@@ -151,7 +153,7 @@ function App() {
           <label style={{ cursor: 'pointer', color: matchType === 'exact' ? '#ccc' : '#333' }}>
             <input 
               type="checkbox" 
-              disabled={matchType === 'exact'} 
+              disabled={isRunning || matchType === 'exact'} 
               checked={allowRemainder} 
               onChange={(e) => setAllowRemainder(e.target.checked)} 
             /> 나머지 허용 (미체크 시 배수만 집계)
@@ -161,7 +163,7 @@ function App() {
         {/* 3. 카운트 방식 (Select) */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderLeft: '1px solid #ccc', paddingLeft: '15px' }}>
           <span style={{ fontWeight: 'bold' }}>집계 방식:</span>
-          <select value={calcMethod} onChange={(e) => setCalcMethod(e.target.value)} style={{ padding: '5px', borderRadius: '4px' }}>
+          <select value={calcMethod} onChange={(e) => setCalcMethod(e.target.value)} disabled = {isRunning} style={{ padding: '5px', borderRadius: '4px' }}>
             <option value="once">단순 1회</option>
             <option value="ratio">금액 비례(배수)</option>
           </select>
