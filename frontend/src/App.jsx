@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo,useRef } from 'react';
+import React, { useState, useEffect, useMemo,useRef,useCallback } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { ModuleRegistry, AllCommunityModule,themeQuartz } from 'ag-grid-community';
 
@@ -31,6 +31,16 @@ function App() {
   //const calcMethodRef = useRef(calcMethod);
   const settingsRef = useRef({targetAmount,matchType,allowRemainder,calcMethod});
 
+  const [historyGridApi,setHistoryGridApi] = useState(null);
+  const [countGridApi,setCountGridApi] = useState(null);
+
+  const onHistoryGridReady = useCallback((params)=>{
+    setHistoryGridApi(params.api);
+  },[]);
+
+  const onCountGridReady = useCallback((params)=>{
+    setCountGridApi(params.api);
+  },[]);
   useEffect(()=>{
     settingsRef.current = {targetAmount,matchType,allowRemainder,calcMethod}
   },[targetAmount,matchType,allowRemainder,calcMethod])
@@ -73,14 +83,52 @@ function App() {
     { field: 'time', headerName: '시간', width: 120 },
     { field: 'nickname', headerName: '닉네임', width: 120 },
     { field: 'amount', headerName: '치즈', width: 100,hide:!showAmount, valueFormatter: p => p.value?.toLocaleString() + '원' },
-    { field: 'message', headerName: '메시지', flex: 1 }
+    { field: 'message', headerName: '도네 내용', flex: 1 },
+    { headerName : '삭제',
+      width:80,
+      minWidth: 80,
+      suppressSizeToFit: true,
+      cellRenderer:(params=>(
+        <button
+          onClick={() => onDeleteHistory(params)}
+          style={{ cursor: 'pointer', border: 'none', background: 'none' }}
+          >❌</button>
+      ))
+    }
   ], [showAmount]);
 
   const countColDefs = useMemo(() => [
     { field: 'message', headerName: '도네 내용', flex: 1 },
     { field: 'count', headerName: '횟수', width: 100 },
-    { field: 'totalAmount', headerName: '누적 치즈',hide:!showAmount, width: 150, valueFormatter: p => p.value?.toLocaleString() + '원' }
+    { field: 'totalAmount', headerName: '누적 치즈',hide:!showAmount, width: 150, valueFormatter: p => p.value?.toLocaleString() + '원' },
+    { headerName : '삭제',
+      width:80,
+      minWidth: 80,
+      suppressSizeToFit: true,
+      cellRenderer:(params=>(
+        <button
+          onClick={() => onDeleteCount(params)}
+          style={{ cursor: 'pointer', border: 'none', background: 'none' }}
+          >❌</button>
+      ))
+    }
   ], [showAmount]);
+
+  const onDeleteHistory = (params)=>{
+    if(window.confirm('이 내역을 삭제할까요?')){
+      const targetData = params.data;
+      params.api.applyTransaction({remove:[targetData]});
+      setHistoryRows(prev => prev.filter(item => item !== targetData));
+    }
+  }
+
+  const onDeleteCount = (params)=>{
+    if(window.confirm('이 내역을 삭제할까요?')){
+      const targetData = params.data;
+      params.api.applyTransaction({remove:[targetData]});
+      setCountRows(prev=>prev.filter(item=>item!==targetData));
+    }
+  }
 
   const handleStart = async () => {
     if (!channelId) return alert('채널 ID를 입력하세요');
@@ -226,6 +274,7 @@ function App() {
       <AgGridReact 
       key="grid-count"
       theme={myTheme} // ⭐ 최신 테마 적용
+      onGridReady={onCountGridReady}
       rowData={countRows} 
       columnDefs={countColDefs}
       animateRows={true}
@@ -235,6 +284,7 @@ function App() {
       <AgGridReact 
       key="grid-history"
       theme={myTheme} // ⭐ 최신 테마 적용
+      onGridReady={onHistoryGridReady}
       rowData={historyRows} 
       columnDefs={historyColDefs}
       animateRows={true}

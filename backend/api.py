@@ -116,7 +116,7 @@ class AppAPI:
                     #if cmd == 93101:
                         for msg in body_list:
                             if not msg: continue
-                            
+                            if msg.get('msgTypeCode') != 10 : continue # 미션,구독 제외
                             try:
                                 # extras 추출 및 파싱
                                 extras_raw = msg.get('extras')
