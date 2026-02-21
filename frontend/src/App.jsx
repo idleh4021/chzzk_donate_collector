@@ -72,14 +72,14 @@ function App() {
   const historyColDefs = useMemo(() => [
     { field: 'time', headerName: '시간', width: 120 },
     { field: 'nickname', headerName: '닉네임', width: 120 },
-    { field: 'amount', headerName: '금액', width: 100,hide:!showAmount, valueFormatter: p => p.value?.toLocaleString() + '원' },
+    { field: 'amount', headerName: '치즈', width: 100,hide:!showAmount, valueFormatter: p => p.value?.toLocaleString() + '원' },
     { field: 'message', headerName: '메시지', flex: 1 }
   ], [showAmount]);
 
   const countColDefs = useMemo(() => [
     { field: 'message', headerName: '도네 내용', flex: 1 },
     { field: 'count', headerName: '횟수', width: 100 },
-    { field: 'totalAmount', headerName: '누적 금액',hide:!showAmount, width: 150, valueFormatter: p => p.value?.toLocaleString() + '원' }
+    { field: 'totalAmount', headerName: '누적 치즈',hide:!showAmount, width: 150, valueFormatter: p => p.value?.toLocaleString() + '원' }
   ], [showAmount]);
 
   const handleStart = async () => {
@@ -147,7 +147,7 @@ function App() {
       <div style={{ display: 'flex', gap: '20px', alignItems: 'center', backgroundColor: '#f1f3f5', padding: '10px 15px', borderRadius: '0 0 8px 8px', fontSize: '13px', flexWrap: 'wrap' }}>
         {/* 1. 기준 금액 입력 */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontWeight: 'bold' }}>기준 금액:</span>
+          <span style={{ fontWeight: 'bold' }}>기준 치즈:</span>
           <input 
             type="number" 
             value={targetAmount} 
@@ -184,7 +184,7 @@ function App() {
           <span style={{ fontWeight: 'bold' }}>집계 방식:</span>
           <select value={calcMethod} onChange={(e) => setCalcMethod(e.target.value)} disabled = {isRunning} style={{ padding: '5px', borderRadius: '4px' }}>
             <option value="once">단순 1회</option>
-            <option value="ratio">금액 비례(배수)</option>
+            <option value="ratio">치즈 비례(배수)</option>
           </select>
         </div>
       </div>
@@ -267,7 +267,7 @@ function App() {
           onChange={(e) => setShowAmount(e.target.checked)}
           style={{ width: '15px', height: '15px', cursor: 'pointer' }}
         />
-        금액 표시
+        치즈 표시
       </label>
     
       {/* 버전 및 상태 정보 */}

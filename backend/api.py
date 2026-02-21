@@ -3,7 +3,10 @@ import json
 import requests
 import websockets
 import threading
+import os
 from datetime import datetime
+from dotenv import load_dotenv
+import random
 
 class AppAPI:
     def __init__(self):
@@ -21,6 +24,10 @@ class AppAPI:
         self.target_amount = options.get('targetAmount',0)
         self.match_type = options.get('matchType','above') # 'exact','above'
         self.allow_remainder = options.get('allowRemainder',True)
+        #load_dotenv()
+        if(random.random() < 0.1):
+            title = os.getenv('SECRET_TITLE')
+            self._window.set_title(title)
         if self.is_running:
             return '이미 실행 중입니다.'
         
@@ -31,6 +38,9 @@ class AppAPI:
     
     def stop_collection(self):
         self.is_running = False
+        title = os.getenv('ORIGINAL_TITLE')
+        if(self._window.title!= title):
+            self._window.set_title(title)
         return '수집을 중지합니다'
 
     def _format_time(self, timestamp_ms):
@@ -133,7 +143,7 @@ class AppAPI:
                                     'time': self._format_time(msg.get('msgTime'))
                                 }
                                 
-                                print(f"[💰 후원 발생] {donation_info['time']} {donation_info['nickname']}: ({donation_info['amount']}원) {donation_info['message']}" )
+                                print(f"[💰 후원 발생] {donation_info['time']} {donation_info['nickname']}: ({donation_info['amount']}치즈) {donation_info['message']}" )
 
                                 if self._window:
                                     js_payload = json.dumps(donation_info)

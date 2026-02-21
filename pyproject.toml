@@ -5,6 +5,8 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "pyinstaller>=6.19.0",
+    "python-dotenv>=1.2.1",
     "pywebview>=6.1",
     "requests>=2.32.5",
     "websockets>=16.0",
