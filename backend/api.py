@@ -139,7 +139,7 @@ class AppAPI:
                                 donation_info = {
                                     'nickname': nickname,
                                     'amount': pay_amount,
-                                    'message': msg.get('msg', ''),
+                                    'message': msg.get('msg', '').strip(),
                                     'time': self._format_time(msg.get('msgTime'))
                                 }
                                 
