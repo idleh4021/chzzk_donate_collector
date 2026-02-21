@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo,useRef } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { ModuleRegistry, AllCommunityModule,themeQuartz } from 'ag-grid-community';
 
@@ -23,12 +23,32 @@ function App() {
   const [historyRows, setHistoryRows] = useState([]);
   const [countRows, setCountRows] = useState([]);
   const [showAmount,setShowAmount] = useState(false);
-  
+  const [targetAmount, setTargetAmount] = useState(1000);
+  const [matchType,setMatchType] = useState('above');
+  const [calcMethod,setCalcMethod] = useState('ratio');
+  const [allowRemainder, setAllowRemainder] = useState(true);
+  //const targetAmountRef = useRef(targetAmount);
+  //const calcMethodRef = useRef(calcMethod);
+  const settingsRef = useRef({targetAmount,matchType,allowRemainder,calcMethod});
+
+  useEffect(()=>{
+    settingsRef.current = {targetAmount,matchType,allowRemainder,calcMethod}
+  },[targetAmount,matchType,allowRemainder,calcMethod])
+
   // 1. 현재 선택된 탭 상태 (기본값: 'count')
   const [activeTab, setActiveTab] = useState('count');
 
   useEffect(() => {
     window.addDonation = (data) => {
+      const {targetAmount: currTarget,calcMethod: currMethod}= settingsRef.current;
+      let increment = 1;
+
+      if(currMethod ==='ratio' ){
+        const base = currTarget || 1000;
+        increment = Math.floor((data.amount || 0 ) / base);
+        if(increment < 1) increment = 1;
+      }
+
       setHistoryRows(prev => [data, ...prev].slice(0, 500));
       setCountRows(prev => {
         const existingIndex = prev.findIndex(row => row.message === data.message);
@@ -36,12 +56,12 @@ function App() {
           const newState = [...prev];
           newState[existingIndex] = {
             ...newState[existingIndex],
-            count: newState[existingIndex].count + 1,
+            count: newState[existingIndex].count + increment,
             totalAmount: newState[existingIndex].totalAmount + (data.amount || 0)
           };
           return newState.sort((a, b) => b.count - a.count);
         } else {
-          return [...prev, { message: data.message, count: 1, totalAmount: (data.amount || 0) }];
+          return [...prev, { message: data.message, count: increment, totalAmount: (data.amount || 0) }];
         }
       });
     };
@@ -64,8 +84,16 @@ function App() {
 
   const handleStart = async () => {
     if (!channelId) return alert('채널 ID를 입력하세요');
+
+    const options = {
+      targetAmount: Number(targetAmount),
+      matchType,
+      calcMethod,
+      allowRemainder
+    }
+
     if (window.pywebview && window.pywebview.api) {
-      const res = await window.pywebview.api.start_collection(channelId);
+      const res = await window.pywebview.api.start_collection(channelId, options);
       setIsRunning(true);
     }
   };
@@ -95,7 +123,50 @@ function App() {
           <button onClick={handleStop} style={{ padding: '10px 25px', backgroundColor: '#ff4d4d', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>수집 중지</button>
         )}
       </div>
+      {/* ⭐ 추가된 상세 설정 영역 (필터 및 집계 조건) */}
+      <div style={{ display: 'flex', gap: '20px', alignItems: 'center', backgroundColor: '#f1f3f5', padding: '10px 15px', borderRadius: '0 0 8px 8px', fontSize: '13px', flexWrap: 'wrap' }}>
+        {/* 1. 기준 금액 입력 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontWeight: 'bold' }}>기준 금액:</span>
+          <input 
+            type="number" 
+            value={targetAmount} 
+            onChange={(e) => setTargetAmount(Number(e.target.value))} 
+            style={{ width: '80px', padding: '5px', border: '1px solid #ccc', borderRadius: '4px' }}
+          />
+        </div>
 
+        {/* 2. 비교 방식 (라디오) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', borderLeft: '1px solid #ccc', paddingLeft: '15px' }}>
+          <label style={{ cursor: 'pointer' }}>
+            <input type="radio" name="matchType" value="exact" checked={matchType === 'exact'} onChange={(e) => setMatchType(e.target.value)} /> 정확히
+          </label>
+          <label style={{ cursor: 'pointer' }}>
+            <input type="radio" name="matchType" value="above" checked={matchType === 'above'} onChange={(e) => setMatchType(e.target.value)} /> 이상
+          </label>
+        </div>
+
+        {/* 4. 나머지 허용 여부 (체크박스) - '이상'일 때만 의미 있음 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', borderLeft: '1px solid #ccc', paddingLeft: '15px' }}>
+          <label style={{ cursor: 'pointer', color: matchType === 'exact' ? '#ccc' : '#333' }}>
+            <input 
+              type="checkbox" 
+              disabled={matchType === 'exact'} 
+              checked={allowRemainder} 
+              onChange={(e) => setAllowRemainder(e.target.checked)} 
+            /> 나머지 허용 (미체크 시 배수만 집계)
+          </label>
+        </div>
+
+        {/* 3. 카운트 방식 (Select) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderLeft: '1px solid #ccc', paddingLeft: '15px' }}>
+          <span style={{ fontWeight: 'bold' }}>집계 방식:</span>
+          <select value={calcMethod} onChange={(e) => setCalcMethod(e.target.value)} style={{ padding: '5px', borderRadius: '4px' }}>
+            <option value="once">단순 1회</option>
+            <option value="ratio">금액 비례(배수)</option>
+          </select>
+        </div>
+      </div>
       {/* 탭 메뉴 영역 */}
       <div style={{ display: 'flex', gap: '5px' }}>
         <button 

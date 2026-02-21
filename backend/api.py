@@ -10,11 +10,17 @@ class AppAPI:
         self.is_running = False
         self._loop = None
         self._window = None
+        self.target_amount = 0
+        self.match_type = None
+        self.allow_remainder = False
         
     def set_window(self, window):
         self._window = window
         
-    def start_collection(self, channel_id):
+    def start_collection(self, channel_id,options):
+        self.target_amount = options.get('targetAmount',0)
+        self.match_type = options.get('matchType','above') # 'exact','above'
+        self.allow_remainder = options.get('allowRemainder',True)
         if self.is_running:
             return '이미 실행 중입니다.'
         
@@ -42,6 +48,16 @@ class AppAPI:
             print(f"루프 실행 오류: {e}")
         finally:
             self._loop.close()
+            
+    def isPassDonation(self, amount):
+        if self.target_amount > amount:
+            return False
+        if self.match_type =='exact' and self.target_amount != amount:
+            return False
+        if not self.allow_remainder and amount % self.target_amount != 0:
+            return False
+        return True
+            
         
     async def _collect_donations(self, channel_id):
         try:
@@ -86,8 +102,8 @@ class AppAPI:
                         continue
 
                     # 3. 후원 전용 커맨드 93102 처리
-                    #if cmd == 93102:
-                    if cmd == 93101:
+                    if cmd == 93102:
+                    #if cmd == 93101:
                         for msg in body_list:
                             if not msg: continue
                             
@@ -99,7 +115,8 @@ class AppAPI:
                                 extras = json.loads(extras_raw) if isinstance(extras_raw, str) else extras_raw
                                 pay_amount = extras.get('payAmount')
                                 
-                                
+                                if(not self.isPassDonation(pay_amount)):
+                                    continue
                                     #profile_raw = msg.get('profile', '{}')
                                     #profile = json.loads(profile_raw) if isinstance(profile_raw, str) else profile_raw
                                 profile_raw = msg.get('profile')
