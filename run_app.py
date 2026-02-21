@@ -2,6 +2,8 @@ import subprocess
 import os
 import platform
 
+#uv run pyinstaller --onefile --icon="backend/assets/icon.ico" --add-data "frontend/dist;frontend/dist" --add-data "backend/assets;backend/assets" backend/main.py
+
 def run():
     # 1. 경로 설정
     root_dir = os.getcwd()
