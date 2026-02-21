@@ -132,7 +132,7 @@ function App() {
 
   const handleStart = async () => {
     if (!channelId) return alert('채널 ID를 입력하세요');
-
+    if (targetAmount <= 0) return alert('기준 치즈가 0입니다.');
     const options = {
       targetAmount: Number(targetAmount),
       matchType,
